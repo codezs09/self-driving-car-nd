@@ -23,7 +23,7 @@ The goals / steps of this project are the following:
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./web_images/end_of_no_passing.jpg "Traffic Sign 1"
-[image5]: ./web_images/pedestrain.jpg "Traffic Sign 2"
+[image5]: ./web_images/pedestrian.jpg "Traffic Sign 2"
 [image6]: ./web_images/right_curve.jpg "Traffic Sign 3"
 [image7]: ./web_images/spd_limit_50.jpg "Traffic Sign 4"
 [image8]: ./web_images/yield.jpg "Traffic Sign 5"
@@ -118,7 +118,7 @@ The LeNet structure is slightly adjusted by adding dropout layer to prevent over
 
 Here are five German traffic signs that I found on the web:
 
-![alt text][image4] ![alt text][image5] ![alt text][image6] 
+![alt text]([image4]=30x) ![alt text]([image5]=30x) ![alt text]([image6]=30x)
 ![alt text][image7] ![alt text][image8]
 
 The first image might be difficult to classify because ...
