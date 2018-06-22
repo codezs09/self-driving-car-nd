@@ -63,9 +63,9 @@ Here is an exploratory visualization of the data set. It is a bar chart showing 
 
 I decided not to convert the images to grayscale because traffic sign colors also contain information on what a sign might be. Converting those images to grayscale kind of lose this advantage. 
 
-I normalized the image data because well conditioned inputs (zero mean, equal variance) facilitate the optimization to find weights minimizing cross-entropy error. 
+I normalized the image data because well conditioned inputs (zero mean, equal variance) facilitate the optimization to find weights minimizing cross-entropy error. The normalization goes like this: 
+   (image-128.)/128.
 
-(might put a distribution image here)
 
 #### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
 
