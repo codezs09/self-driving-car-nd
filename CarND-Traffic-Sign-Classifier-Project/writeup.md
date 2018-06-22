@@ -19,7 +19,7 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/visualization.jpg "Visualization"
+[image1]: ./others/hist.png "Visualization"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./web_images/end_of_no_passing.jpg "Traffic Sign 1"
@@ -46,7 +46,7 @@ I used the pandas library to calculate summary statistics of the traffic
 signs data set:
 
 * The size of training set is 34799
-* The size of the validation set is ?
+* The size of the validation set is 4410
 * The size of test set is 12630
 * The shape of a traffic sign image is (32, 32, 3)
 * The number of unique classes/labels in the data set is 43
@@ -98,9 +98,9 @@ To train the model, I used an Adamoptimizer with learning rate 0.001, batch size
 #### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of 0.953
-* test set accuracy of 0.937
+* training set accuracy of 0.998
+* validation set accuracy of 0.949
+* test set accuracy of 0.935
 
 If a well known architecture was chosen:
 * What architecture was chosen? 
@@ -131,39 +131,40 @@ Here are the results of the prediction:
 | Image			        |     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
 | 	End of no passing      		| 	End of no passing   									| 
-| Pedestrians     			| Speed limit (30km/h) 										|
+| Pedestrians     			| Pedestrian 										|
 | Dangerous curve to the right					| Dangerous curve to the right											|
-| 	Speed limit (50km/h)	      		| 	Speed limit (50km/h)					 				|
+| 	Speed limit (50km/h)	      		| 	Speed limit (30km/h)					 				|
 | Yield			| Yield      							|
 
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of 93.7%
+The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of 93.5%
 
 #### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
 The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
 
-For the first image, the model is relatively sure that this is a End-of-No-Passing sign (probability of 0.87), and the image does contain the sign. The top five soft max probabilities were
+For the first image, the model is pretty sure that this is a End-of-No-Passing sign (probability of 0.95), and the image does contain the sign. The top five soft max probabilities were
 
 | Probability         	|     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| .87         			| End of no passing   									| 
-| .13     				| Keep right										|
-| 0.0024					| 	Dangerous curve to the right											|
-| 5.8e-4      			| Go straight or right					 				|
-| 1.7e-4				    | Priority     							|
+| .95         			| End of no passing   									| 
+| .048     				| End of all speed and passing limits									|
+| 2.1e-4					| 	End of no passing by vehicles over 3.5 metric tons											|
+| 2.6e-5      			| Priority road				 				|
+| 1.2e-5				    | 	Right-of-way at the next intersection     							|
 
+The 2nd, 3rd, and 5th images present similar results as the 1st image. The neutral network recognize these traffic signs with high probbability. 
 
-For the second image, the model is not so sure that this is a 30km/h speed limit sign (probability of 0.52), and the image does contain a Pedestrain sign. The wrong recognition may be due to that the background behind the traffic sign (branches of a tree), or could be due to the watermark on the pedestrain sign from the downloaded picture. 
+For the 4th image, though, the model is not so sure that this is a 30km/h speed limit sign (probability of 0.56), and the image actually contains a 50km/h speed limit sign. But the model gives a 0.44 probability that the image is 50km/h speed limit sign, which still shows that in some degree the model is capable to recognize the correct feature of this speed limit sign. 
 The top five soft max probabilities were
 
 | Probability         	|     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| .52         			| Speed limit (30km/h)   									| 
-| .41     				| General caution										|
-| 0.067					| 	Wild animals crossing										|
-| 2.8e-3      			| Pedestrians					 				|
-| 1.0e-3				    | 	Right-of-way at the next intersection     							|
+| .56         			| Speed limit (30km/h)   									| 
+| .44     				| Soeed limit (50km/h)									|
+| 3.4e-13					| 		End of speed limit (80km/h)									|
+| 3.9e-14      			| Speed limit (80km/h)					 				|
+| 5.8e-15				    | 		Speed limit (100km/h)    							|
 
 
 ### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
