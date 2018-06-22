@@ -23,10 +23,10 @@ The goals / steps of this project are the following:
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./web_images/end_of_no_passing.jpg "Traffic Sign 1"
-[image5]: ./examples/pedestrain.jpg "Traffic Sign 2"
-[image6]: ./examples/right_curve.jpg "Traffic Sign 3"
-[image7]: ./examples/spd_limit_50.jpg "Traffic Sign 4"
-[image8]: ./examples/yield.jpg "Traffic Sign 5"
+[image5]: ./web_images/pedestrain.jpg "Traffic Sign 2"
+[image6]: ./web_images/right_curve.jpg "Traffic Sign 3"
+[image7]: ./web_images/spd_limit_50.jpg "Traffic Sign 4"
+[image8]: ./web_images/yield.jpg "Traffic Sign 5"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
@@ -155,6 +155,7 @@ For the first image, the model is relatively sure that this is a End-of-No-Passi
 
 For the second image, the model is not so sure that this is a 30km/h speed limit sign (probability of 0.52), and the image does contain a Pedestrain sign. The wrong recognition may be due to that the background behind the traffic sign (branches of a tree), or could be due to the watermark on the pedestrain sign from the downloaded picture. 
 The top five soft max probabilities were
+
 | Probability         	|     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
 | .52         			| Speed limit (30km/h)   									| 
