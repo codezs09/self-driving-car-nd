@@ -18,13 +18,11 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[image2]: ./collectData/IMG/center_2018_06_27_12_27_56_233.jpg "center"
+[image3]: ./collectData/IMG/center_2018_06_28_22_43_39_042.jpg "Recovery Image"
+[image4]: ./collectData/IMG/center_2018_06_28_22_43_39_543.jpg "Recovery Image"
+[image5]: ./collectData/IMG/center_2018_06_28_22_43_39_904.jpg "Recovery Image"
+
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -134,4 +132,4 @@ The model used an adam optimizer, so the learning rate was not tuned manually (m
 
 Then I proceed with this model structure and use AWS EC2 to train the network with all the data on GPU. The final mse reached 0.0401 for training dataset and 0.0422 for validation dataset after 10 epochs. One trick is to load weight values of previous training results as intial weight values which could saves training time. 
 
-The trained results ```model.h5``` on AWS was used in "Autonomous mode" in the simulator. The vehicle is able to drive autonomously around the track without leaving the road! Here's the link to the video (https://www.youtube.com/watch?v=athfnWg027U&t=1s)
+The trained results ```model.h5``` on AWS was used in "Autonomous mode" in the simulator. The vehicle is able to drive autonomously around the track without leaving the road! Here's the link to the recorded video (https://www.youtube.com/watch?v=athfnWg027U&t=1s)
