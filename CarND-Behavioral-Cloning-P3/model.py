@@ -11,6 +11,47 @@ with open("./collectData/driving_log.csv") as csvfile:
     for line in spamreader:
         lines.append(line)
 
+from sklearn.model_selection import train_test_split
+train_lines, validation_lines = train_test_split(lines[0:100], train_size=0.8, shuffle=True)
+
+# load images using generators
+def generator(lines, batch_size=20):
+    num_lines = len(lines)
+    while 1:  # Loop forever so the generator never terminates
+        shuffle(lines)
+        for i in range(0, num_lines, batch_size):
+            batch_lines = lines[i:i+batch_size]
+
+            images = []
+            str_angles = []
+            for batch_line in batch_lines:
+                str_angle = float(batch_line[3])
+                str_offset_lr = 0.3 # steer angle offset for left and right
+                for j in range(3):
+                    path = "./collectData/IMG/"+batch_line[j].split('\\')[-1]
+                    image = cv2.imread(path)
+                    images.append(image)
+                    if j==0:        # center image
+                        str_angles.append(str_angle)
+                    elif j==1:      # left image
+                        str_angles.append(str_angle+str_offset_lr)
+                    else:           # right image
+                        str_angles.append(str_angle-str_offset_lr)
+
+                    # data augmentation: flip images
+                    if j==0:
+                        image_flip = cv2.flip(image,flipCode=0)
+                        images.append(image_flip)
+                        str_angles.append(-str_angle)
+            X_train = np.array(images)
+            y_train = np.array(str_angles)
+            yield sklearn.utils.shuffle(X_train, y_train)
+
+train_generator = generator(train_lines)
+validation_generator = generator(validation_lines)
+
+
+"""
 images = []
 measurements = []
 for line in lines[0:101]:
@@ -49,17 +90,12 @@ for line in lines[0:101]:
     
 X_train = np.array(images)
 y_train = np.array(measurements)
-    
-
-# load images using generators
-
-
+"""
 
 # define model 
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout, Flatten, Lambda
 from keras.layers.convolutional import Cropping2D, Convolution2D
-
 
 model = Sequential()    # Input shape 160x320x3
 model.add( Cropping2D( cropping=((65,22),(0,0)), input_shape=(160,320,3) ) )# crop images
@@ -76,28 +112,15 @@ model.add(Dense(10)) # Fully Connected 10
 model.add(Dense(1))
 
 model.compile(optimizer='adam', loss='mse')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=10)  # train model
+# model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=10)  # train model
 
-model.save('model.h5')
-# model.load_weights('my_model_weights.h5')
-# or
-# del model
-# model = load_model('my_model.h5')
-
-
-# validate model
-
-
-"""
-# visualization
 from keras.models import Model
 import matplotlib.pyplot as plt
 
-history_object = model.fit_generator(train_generator, samples_per_epoch =
-    len(train_samples), validation_data =
-    validation_generator,
-    nb_val_samples = len(validation_samples),
-    nb_epoch=5, verbose=1)
+history_object = model.fit_generator(train_generator, samples_per_epoch=len(train_lines), nb_epoch=10,
+                    validation_data=validation_generator, nb_val_samples=len(validation_lines))
+
+model.save('model.h5')
 
 ### print the keys contained in the history object
 print(history_object.history.keys())
@@ -110,4 +133,16 @@ plt.ylabel('mean squared error loss')
 plt.xlabel('epoch')
 plt.legend(['training set', 'validation set'], loc='upper right')
 plt.show()
-"""
+
+# model.load_weights('my_model_weights.h5')
+# or
+# del model
+# model = load_model('my_model.h5')
+
+
+# validate model
+
+
+
+#  RGB: cv2 problem?
+
