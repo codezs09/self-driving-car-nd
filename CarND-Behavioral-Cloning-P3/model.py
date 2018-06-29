@@ -11,7 +11,7 @@ with open("./collectData/driving_log.csv") as csvfile:
         lines.append(line)
 
 from sklearn.model_selection import train_test_split
-train_lines, validation_lines = train_test_split(lines[-101:-1], test_size=0.2, shuffle=True)
+train_lines, validation_lines = train_test_split(lines, test_size=0.2, shuffle=True)
 
 
 # load images using generators
@@ -29,7 +29,7 @@ def generator(lines, batch_size=20):
                 str_offset_lr = 0.3 # steer angle offset for left and right
 
                 for j in range(3):
-                    path = "./collectData/IMG/"+batch_line[j].split('\\')[-1]
+                    path = "./collectData/IMG/"+batch_line[j].split('/')[-1]
                     image = plt.imread(path)
                     images.append(image)
                     if j == 0:        # center image
