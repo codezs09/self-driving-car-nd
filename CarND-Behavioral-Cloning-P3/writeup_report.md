@@ -54,9 +54,9 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+The convoluntional neutral network employed by NIVDIA has been implemented successful in real world (https://arxiv.org/pdf/1604.07316v1.pdf). Therefore its structure is greatly refered in my work with only slightly change. 
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+The i
 
 #### 2. Attempts to reduce overfitting in the model
 
@@ -75,6 +75,15 @@ Training data was chosen to keep the vehicle driving on the road. I used a combi
 For details about how I created the training data, see the next section. 
 
 ### Model Architecture and Training Strategy
+
+### 1. Data Collection, Preprocessing and Augmentation
+
+First, the simulator is running in its "train mode" by me with keyboard controlling its steering angle. The quality of training data is found crucial in training the neutral network later. Besides recording data of a full loop driving the vehicle near centerline, some tactics I also used during data collection is to routinely veer the vehicle close to the road boundary and then start recording the steering process to make it to centerline. This process is repeated several times which could be seen in later images in "./collectData/IMAGE/". Overall, the collected images including center, left and right reached a number of 15108, which is around three loops of data. 
+
+The collected data is augmented in several ways: 
+* ```numpy.fliplr()``` function is utilized to flip the center images from left to right, which generalize the data as the vehicle is originally driving in anti-clockwise direction. 
+* 
+
 
 #### 1. Solution Design Approach
 
