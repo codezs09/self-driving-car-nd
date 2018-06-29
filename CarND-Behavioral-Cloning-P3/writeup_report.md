@@ -89,7 +89,7 @@ I started with a small portional of data ( several hundreds ) to start with tunn
 Then I found that this model had a reducing mean squared error on the training set yet a increasing mean squared error on the validation set through the last few epochs. This implied that the model was probably overfitting. To combat the overfitting, I modified the model by adding dropout of the first fully connected layer (line 132, model.py). It is found mse of both training and validation dataset have decreased. And it's also very surprising to see how few "good" datasets (for example I used some datasets recovering the vehicle from left/right to center) could obtain a relative well-trained model, which is able to drive the simulator a quite long distance. 
 
 It is therefore that this model structure is decided before more data is trained with this model structure on AWS. Below is the description of the model structure: 
-
+```
 ____________________________________________________________________________________________________
 Layer (type)                     Output Shape          Param #     Connected to
 ====================================================================================================
@@ -129,27 +129,9 @@ dense_3 (Dense)                  (None, 10)            510         dense_2[0][0]
 ____________________________________________________________________________________________________
 dense_4 (Dense)                  (None, 1)             11          dense_3[0][0]
 ====================================================================================================
-
-
-
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
-
+```
 The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
 
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+Then I proceed with this model structure and use AWS EC2 to train the network with all the data on GPU. The final mse reached 0.0401 for training dataset and 0.0422 for validation dataset after 10 epochs. One trick is to load weight values of previous training results as intial weight values which could saves training time. 
 
-
-
-
-
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+The trained results ```model.h5``` on AWS was used in "Autonomous mode" in the simulator. The vehicle is able to drive autonomously around the track without leaving the road! Here's the link to the video (https://www.youtube.com/watch?v=athfnWg027U&t=1s)
