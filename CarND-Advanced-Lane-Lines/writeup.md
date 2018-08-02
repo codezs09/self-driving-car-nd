@@ -195,3 +195,11 @@ A diagnostic view is also coded in reference to Jeremy Shannon'work (https://git
 #### Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 As shown in the above image of the diagnostic view clip, the pipeline will likely fail at challenging environment, like shade etc. Improvement to imrove robustness has already made in this work by including sanity checks (with details introduced in step 9) to discard the poorly fitted polynomial coefs. Still, improvements might be made at the very beginning by adjusting methods and thresholds to obtain a more clear binary image without noisy pixels from shade and other unwanted objects. 
+
+---
+
+### Documents
+
+The full video for the project can be viewed as project_video_output.mp4 in the same directory of this document. (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Advanced-Lane-Lines/project_video_output.mp4)
+
+The diagnostic view of the project video is also given (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Advanced-Lane-Lines/project_video_output_diag.mp4).
