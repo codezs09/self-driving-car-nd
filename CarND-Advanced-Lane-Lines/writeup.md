@@ -24,9 +24,15 @@ The code and steps corresponding for this writeup is contained in the IPython no
 [image5]: ./output_images/warped1.png "warped_image1"
 [image6]: ./output_images/warped2.png "warped_image2"
 [image7]: ./output_images/warped_cmbBinary.png "warped_cmbBinary"
+[image8]: ./output_images/lanePixels_slidwindow.png "lanePixels_slidwindow"
+[image9]: ./output_images/lanePixels_aroundPoly.png "lanePixels_aroundPoly"
+[image10]: ./output_images/unwarp_undist_text.png "unwarp_undist_text"
+[image11]: ./output_images/video_clip1.png "video_clip1"
+[image12]: ./output_images/video_clip2.png "video_clip2"
+[image13]: ./output_images/video_clip3.png "video_clip3"
+[image14]: ./output_images/video_clip4.png "video_clip4"
 
 
-[video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ---
@@ -96,76 +102,91 @@ Apply this perspective transform on the previously obtained binary image in step
 
 There are two ways defined in this project to find lane pixels from the thresholded binary images. The first way utilizes sliding windows from bottom to the top while adjusting the window positions based on pixels distributions. This is used when no information of rough searching area is given, which is typical for a single image. The function using sliding windows to find lane pixels is shown in the same section in the ipynb notebook.
 
+The image below shows the lane pixels found using sliding windows for the warped binary image obtained in step 4. Lane pixels for the left lane are represented in red color while the ones for the right lane in blue. A second-order polynomial fit is made with regard to these given lane pixels. The fitted polynomial curves for left and right lanes are also shown on the image.
+
+![alt text][image8]
+
+Another way is searching lane pixels along a known polynomial curve. This method is suitable for video frames. The given polynomial curve is usually available from previous frame. The function for this method is defined below:
+
+![alt text][image9]
 
 
+### 6. Determine the curvature of the lane and vehicle position with respect to center
+To relate the curvature in real space to the polynomial curves obtained in pixel space, the scale from pixel to meter in x/y directions are first estimated as below:
 
-### Pipeline (single images)
-
-#### 1. Provide an example of a distortion-corrected image.
-
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
-
-
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
-
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
-
-![alt text][image3]
-
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
-
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+```python 
+# Define conversions in x and y from pixels space to meters
+ym_per_pix = 30/720 # meters per pixel in y dimension
+xm_per_pix = 3.7/600 # meters per pixel in x dimension
 ```
 
-This resulted in the following source and destination points:
+The radius of curvature is hence calculated using the following equations:
 
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+```python 
+def cvtCoef_pix2real(coef_pix, xm_per_pix,ym_per_pix):
+    coef_real = np.zeros_like(coef_pix)
+    coef_real[0] = coef_pix[0]*xm_per_pix/(ym_per_pix**2)
+    coef_real[1] = coef_pix[1]*xm_per_pix/ym_per_pix
+    coef_real[2] = coef_pix[2]*xm_per_pix
+    
+    return coef_real
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+def measrCurv_real(img_shape,left_coef,right_coef,xm_per_pix,ym_per_pix):
+    # conversion of left_coef, right_coef to real 
+    left_coef_real = cvtCoef_pix2real(left_coef,xm_per_pix,ym_per_pix)
+    right_coef_real = cvtCoef_pix2real(right_coef,xm_per_pix,ym_per_pix)
+    
+    y_eval = img_shape[0]-1;
+    
+    left_curverad = ((1+(2*left_coef_real[0]*y_eval*ym_per_pix+left_coef_real[1])**2)**1.5)/np.absolute(2*left_coef_real[0])
+    right_curverad = ((1+(2*right_coef_real[0]*y_eval*ym_per_pix+right_coef_real[1])**2)**1.5)/np.absolute(2*right_coef_real[0])
+    
+    return left_curverad, right_curverad
+```
 
-![alt text][image4]
+The function to calculate the offset of the vehicle from the lane center is also defined. The camera is assumed mounted at the center of the car, such that the lane center is the midpoint at the bottom of the image between the two lines we've detected. The offset of the lane center from the center of the image (converted from pixels to meters) is the distance from the center of the lane.
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+```python
+def measrLaneOffset(img_shape, left_coef,right_coef,xm_per_pix):
+    yin = img_shape[0]-1
+    xin_left = left_coef[0]*yin**2+left_coef[1]*yin+left_coef[2]
+    xin_right = right_coef[0]*yin**2+right_coef[1]*yin+right_coef[2]
+    
+    offset_pix = img_shape[1]/2.-(xin_left+xin_right)/2.
+    offset = offset_pix*xm_per_pix
+    return offset
+```
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+### 7. Warp the detected lane boundaries back onto the original image
 
-![alt text][image5]
+To unwarp the lane lanes in warped binary images back into the original image, the perspective transform function `cv2.warpPerspective()` has to be called again this time with the inverse of transformation matrix Minv. 
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+Also, in this step we output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position obtained in step 6. The unwarped image together with lane information is shown below:
 
-I did this in lines # through # in my code in `my_other_file.py`
+![alt text][image10]
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+### 8. Define Line class
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+The definition of the line class could be seen in step 9 in the ipynb file. The members of the line class include mainly polynomial coefficients history of the last 10 iterations and their average, radius of curvature of the line in meters, and difference in fit coefficients between last and new fits. One method `add_coef(self,coef)` is defined to decide whether to add a newly fitted polynomial coefficients into the history and update the average polynomial coefficients. The newly fitted coefs are compared with the average coefs over the last <=10 iterations. If the disparity is out of reasonable range, the newly fitted coefs are viewed as invalid and discarded. 
 
-![alt text][image6]
+### 9. Pipeline for image processing
 
----
+Integrate the steps 2-8 together to define a pipeline function for lane detection of image or videos. The details of the pipeline could be viewed in step 10 in the ipynb file. Two instances of the line class, `l_line` and `r_line` were created. Based on the boolean value of member `self.detected` in the line classes, the pipeline chooses either sliding window method or around poly method to find the lane pixels. The pipeline returns the unwarped image with lane boundaries and lane info data displayed similar to the output image in step 7. 
 
-### Pipeline (video)
+The pipeline also applies several sanity check strategy to avoid adding poorly fitted polynomial coefficients. One is mentioned in step 8 above by comparison of current fitted polynomial coefs with previous ones during last several iterations. Another way applied in this pipeline is to check whether the fitted left and right lane lines in the "birds-eye view" of the binary image are parallel or not. Besides, the pipeline also checked whether the horizontal distances of these two lane lines along the vertical direction are in the reasonable range. The fitted polynomial coefficients will only be accepted if satisfying all these sanity checks. 
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+The plots below shows video clips generated through this pipeline. It can be observed that the lane boundaries identified matches the actual lane lines very well, even in the second plot where tree shade has created great diffculty in finding the correct lane pixels. But due to the mechanism of sanity check and smooth filter from history, the correctness of identified lane boundaries are ensured. 
 
-Here's a [link to my video result](./project_video.mp4)
+![alt text][image11]
+![alt text][image12]
+
+The full video for the project can be viewed as `project_video_output.mp4` in the same directory of this document. 
+
+A diagnostic view is also coded in reference to Jeremy Shannon'work (https://github.com/jeremy-shannon/CarND-Advanced-Lane-Lines). The output diagnostic view enables us to observe more clearly of what happened at each frame and facilitates our debug of the code. The images below shows two clips of the diagnostic video, which could be viewed as `project_video_output_diag.mp4` in the same directory of this document. The second image below shows a poor condition where the binary image generated have included large area of shades into analysis, which leads to wrongly identified lane lines. The sanity check steps mentioned above ensures the poorly fitted polynomial curves are not accepted. That's why the lane boundaries are still very well matched in the top left view (because it uses average fitted coefs over the last n iterations) despite a poor fit in the bottom right view. 
+
+![alt text][image13]
+![alt text][image14]
+
 
 ---
 
@@ -173,4 +194,4 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+As shown in the above image of the diagnostic view clip, the pipeline will likely fail at challenging environment, like shade etc. Improvement to imrove robustness has already made in this work by including sanity checks (with details introduced in step 9) to discard the poorly fitted polynomial coefs. Still, improvements might be made at the very beginning by adjusting methods and thresholds to obtain a more clear binary image without noisy pixels from shade and other unwanted objects. 
