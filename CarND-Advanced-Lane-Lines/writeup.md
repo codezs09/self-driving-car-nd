@@ -27,10 +27,10 @@ The code and steps corresponding for this writeup is contained in the IPython no
 [image8]: ./output_images/lanePixels_slidwindow.png "lanePixels_slidwindow"
 [image9]: ./output_images/lanePixels_aroundPoly.png "lanePixels_aroundPoly"
 [image10]: ./output_images/unwarp_undist_text.png "unwarp_undist_text"
-[image11]: ./output_images/video_clip1.png "video_clip1"
-[image12]: ./output_images/video_clip2.png "video_clip2"
-[image13]: ./output_images/video_clip3.png "video_clip3"
-[image14]: ./output_images/video_clip4.png "video_clip4"
+[image11]: ./output_images/video_clip1.jpg "video_clip1"
+[image12]: ./output_images/video_clip2.jpg "video_clip2"
+[image13]: ./output_images/video_clip3.jpg "video_clip3"
+[image14]: ./output_images/video_clip4.jpg "video_clip4"
 
 
 
@@ -192,6 +192,6 @@ A diagnostic view is also coded in reference to Jeremy Shannon'work (https://git
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 As shown in the above image of the diagnostic view clip, the pipeline will likely fail at challenging environment, like shade etc. Improvement to imrove robustness has already made in this work by including sanity checks (with details introduced in step 9) to discard the poorly fitted polynomial coefs. Still, improvements might be made at the very beginning by adjusting methods and thresholds to obtain a more clear binary image without noisy pixels from shade and other unwanted objects. 
