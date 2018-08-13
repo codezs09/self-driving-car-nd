@@ -57,7 +57,7 @@ The feature vectors and corresponding label vectors were randomly shuffled and s
 The feature vectors were then normalized using `StandardScaler()` method from `sklearn` package. It's important to note here that when using a scaler to train a classifier, I only fit the scaler on the training data, and then transform both the training and test sets using the scaler. Otherwise if we provide both the training and test set to the scaler, we are allowing the model a peek into the values contained in the test set, and it's no longer as useful at generalizing to unseen data. The code is illustrated below:
 
 ```python
-fromfrom  sklearn.preprocessingsklearn  import StandardScaler
+from  sklearn.preprocessingsklearn  import StandardScaler
 
 # Fit a per-column scaler
 X_scaler = StandardScaler().fit(X_train)
@@ -142,7 +142,7 @@ Visualization of the detected results for the six test images are shown below. V
 
 ![alt text][image11]
 
-However, this pipeline cannot directly applies to video yet. An exmaple of video detection result is given here `test_video_bad.mp4` (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Vehicle-Detection/test_video_bad.mp4) to demonstrate why. It can be shown that in the video false detection boxes could appear occasionally. 
+However, this pipeline cannot directly applies to video yet. An exmaple of video detection result is given here `test_video_bad.mp4` (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Vehicle-Detection/test_video_bad.mp4) to demonstrate why. It can be shown that in the video false detection boxes could appear occasionally. We would to further improve the result by taking advatange of neighbouring frames in a video. 
 
 ### Pipeline for processing video
 As mentioned above, it can be seen for several frames in the previous video result, false positives sometime still persist even after applying heatmap and threshold. We have to further improve the pipeline by utilizing the information from neighboring frames of a video. It is thus natural to use informaiton from neighbouring frames from a video to better decide whether the detected positives are true or false again by applying heatmap and threshold but this time for several frames in a row for a video. First let's define a class to store positive rectangles.
