@@ -17,8 +17,11 @@ The goals / steps of this project are the following:
 [image4]: ./output_images/adjust_scale1p5.png
 [image5]: ./output_images/adjust_scale2.png
 [image6]: ./output_images/windows_beforeHM.png
-
-[video1]: ./project_video.mp4
+[image7]: ./output_images/add_heat.png
+[image8]: ./output_images/threshold_heat.png
+[image9]: ./output_images/label_gray.png
+[image10]: ./output_images/label_img.png
+[image11]: ./output_images/out_testImgs.png
 
 The [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points are considered and explained individually in this document.  
 
