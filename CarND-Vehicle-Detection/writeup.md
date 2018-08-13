@@ -94,7 +94,7 @@ def draw_img = draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
 #### 2. Adjust searching area and scale of sliding windows
 When calling the find_cars() function, the searching area and scale of the sliding windows need to be defined. In this project, the purpose is vehicle detection. The vehicles will most likely appear in the bottom half of the shot images, and their relative size in the image varies with their relative distance from the camera. Therefore, the parameters ystart, ystop, and scale need to be tuned to make the size of the sliding window capable to contain the whole vehicle in that position. 
 To better visualize all the sliding windows in the test images, the color for the sliding windows are set to random colors, inspired by Jemery Shannon's idea here (https://github.com/jeremy-shannon/CarND-Vehicle-Detection/blob/master/vehicle_detection_project.ipynb). 
-The tuned parameters and corresponding visualization results are shown below:
+The tuned parameters and corresponding visualization results are shown below at three different scales of sliding windows. The left side is the visualization of all the sliding windows while the right side shows only the sliding windows with positive detection.
 
 At scale = 1, i.e. sliding window size equals to 96*96, three rows of sliding windows were chosen in the range defined by (ystart,ystop) as (386, 466), (400,480), (416,480) respectively. 
 
@@ -109,53 +109,60 @@ At scale = 2, i.e. sliding window size equals to 128*128, one row of sliding win
 ![alt text][image5]
 
 #### 3. Combine different search area and scales of sliding widows
-Combine all the seraching areas with corresponding scale of sliding windows as adjusted above, we define a function named `find_cars_diffScales`, which returns positive sliding windows from a given image. A visualization of the positive boxes on an example test image is as shown below: 
+Combine all the seraching areas with corresponding scale of sliding windows as adjusted above, we define a function named `find_cars_diffScales`, which returns positive sliding windows from a given image. A visualization of the positive boxes combined together on an example test image is as shown below: 
 
 ![alt text][image6]
 
+### Apply heatmap
+The example test image above shows a good detection result: all the sliding windows contain part of vehicle objects. However, sometimes the classifier might gives wrong detection results which some sliding windows do not contain any vehicle objects. Meanwhile, some large sliding windows have some regions without vehicle components at all, such as one bottom sliding window for the black vehicle in the above image, which is also desirable to be removed from the positive detected regions. 
+To realize this, the heatmap is introduced. The idea is to count the positive frequencies of each pixel in the image. If the pixel is inside the positive sliding windows, the corresponding position of the heatmap is accumulated once. As a result, the higher counts one region in the heatmap is, the more likely this region is a valid positive detection. A `add_heat` function is called to generate the heatmap. The heatmap for the above image is shown below: 
 
-
-
-
-
-
-
-### Sliding Window Search
-
-#### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
-
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
-
-![alt text][image3]
-
-#### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
-
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
-
-![alt text][image4]
----
-
-### Video Implementation
-
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
-
-
-#### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
-
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
-
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
 ![alt text][image7]
+
+By setting a threshold value and reset regions below this threshold of the heatmap, we are more certain to avoid false positives. The following heatmap shows the result after applying a threshold value of 1. 
+
+![alt text][image8]
+
+The `label` function from scipy package group neighboring non-zero pixels into one object. After applying it, for example, to the above thresholded heatmap, it gives an answer of 2 objects (cars) detected. A visualization of the labels are shown here: 
+
+![alt text][image9]
+
+We define a function `draw_labeled_bboxes(img, labels)` to draw rectangular boxes covering the labelled parts. The boxes including labeled regions on the original image are visualized as: 
+
+![alt text][image10]
+
+
+### Pipeline for processing image
+Combine the sliding window search and heatmap together, along with the already trained MLP classifier and fitted scaler, the pipeline to process a single image or frame can be defined, codes of which can refer to `process_image()` function in the corresponding section in the .ipynb notebook. 
+
+Visualization of the detected results for the six test images are shown below. Vehicles in all images have been detected correctly without false detection. 
+
+![alt text][image11]
+
+However, this pipeline cannot directly applies to video yet. An exmaple of video detection result is given here `test_video_bad.mp4` (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Vehicle-Detection/test_video_bad.mp4) to demonstrate why. It can be shown that in the video false detection boxes could appear occasionally. 
+
+### Pipeline for processing video
+As mentioned above, it can be seen for several frames in the previous video result, false positives sometime still persist even after applying heatmap and threshold. We have to further improve the pipeline by utilizing the information from neighboring frames of a video. It is thus natural to use informaiton from neighbouring frames from a video to better decide whether the detected positives are true or false again by applying heatmap and threshold but this time for several frames in a row for a video. First let's define a class to store positive rectangles.
+```python
+# Define a class to store data from video
+class boxlist_frames():
+    def __init__(self):
+        # history of rectangles of n frames
+        self.boxlist = [] 
+        self.n = 0
+        self.max_n = 40
+        
+    def add_boxs(self, boxs):
+        self.boxlist.append(boxs)
+        self.n += 1
+        if self.n > self.max_n:
+            # throw out oldest rectangle set(s)
+            self.boxlist = self.boxlist[len(self.boxlist)-self.max_n:]
+            self.n = self.max_n
+```
+Then a pipeline is defined for video simlar to the previous one for image, except this time the heatmap and threshold is applied to several consecutive frames. After applying this pipeline, the test video is shown great improvement without false positives, as shown in `test_video_output.mp4` (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Vehicle-Detection/test_video_output.mp4). 
+
+The same pipeline is applied to the project video. The output is shown here, `project_video_output.mp4` (https://github.com/codezs09/self-driving-car-nd/blob/master/CarND-Vehicle-Detection/project_video_output.mp4). 
 
 
 
@@ -163,7 +170,6 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
-
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+As shown in the output project video, one problem can be seen is that false detections still appear in some frames. Improvements might be considered in aspects like further tuning HOG parameters, choosing color space and channels to extract HOG features, try other classifer to improve prediction accuracy. 
+Another problem found is that the processing time is relatively huge for sliding window search. This makes sense as the sliding windows scan the search area for each single frame of the video. Some people in the slack forum aruge that deep learning could be more efficient without using the sliding window method, but rather directly give detection results along with the position of detected cars. An exploration to reduce the processing time could be explored in this direction. 
 
