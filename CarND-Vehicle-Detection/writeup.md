@@ -12,12 +12,12 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 [image1]: ./output_images/car_notcar_eg.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
+[image2]: ./output_images/eg_hog.png
+[image3]: ./output_images/adjust_scale1.png
+[image4]: ./output_images/adjust_scale1p5.png
+[image5]: ./output_images/adjust_scale2.png
+[image6]: ./output_images/windows_beforeHM.png
+
 [video1]: ./project_video.mp4
 
 The [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points are considered and explained individually in this document.  
@@ -63,9 +63,58 @@ X_train = X_scaler.transform(X_train)
 X_test = X_scaler.transform(X_test)
 ```
 
-### Train the classifier
+### Classifier chosen and training
 
-A linear SVC classifier and a multi-layer
+A linear SVC classifier and a multi-layer perceptron (MLP) classifier were trained respectively using the train dataset. The comparison of training accuracy, test_accuracy, training time and prediction time are shown below
+
+|          |   Test Accuracy | Training Time (sec) |  Prediction time (sec) for 10 samples |
+|:-------------:|:-------------:| :-------------:| :-------------:| 
+| Linear SVC    |     0.9721   |  6.2 |  0.02698  |
+| MLP      |    0.9901  | 19.06 |  0.02099  |
+
+Although the training time for MLP is longer than the Linear SVC classifier, its prediction accuracy for the same test dataset is higher. Also, our results has shown that the MLP classifier reports fewer false positives than the linear SVC during the sliding window search later for the project video. Besides, once the classifier is trained from the labelled dataset, the prediction time for both types of classifiers are similarly short. 
+Therefore, in terms of prediction accuracy, the MLP classifer is chosen in this project. 
+
+### Sliding window search 
+
+#### 1. Sub-sampling HOG features
+
+When using the sliding window approach as introduced, it is relatively inefficient to extract the HOG feature for each sliding window. Instead, in this project, we tried a more efficient method which HOG feature of the image needs to be extracted only once, for each of a small set of predetermined window sizes (defined by a scale argument), and then can be sub-sampled to get all of its overlaying windows. The fuction for this purpose is defined as `find_cars()` in the .ipynb notebook and returns positive or all rectangles depending on the boolean value of argument `shwAllWindows`.
+
+```python
+def rectangles = find_cars(img, cspace, ystart, ystop, scale, cls, X_scaler, orient, pix_per_cell, cell_per_block,shwAllWindows=False)
+```
+
+For visualization later, a function to draw rectangles onto the image is also defined:
+
+```python
+def draw_img = draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
+```
+
+#### 2. Adjust searching area and scale of sliding windows
+When calling the find_cars() function, the searching area and scale of the sliding windows need to be defined. In this project, the purpose is vehicle detection. The vehicles will most likely appear in the bottom half of the shot images, and their relative size in the image varies with their relative distance from the camera. Therefore, the parameters ystart, ystop, and scale need to be tuned to make the size of the sliding window capable to contain the whole vehicle in that position. 
+To better visualize all the sliding windows in the test images, the color for the sliding windows are set to random colors, inspired by Jemery Shannon's idea here (https://github.com/jeremy-shannon/CarND-Vehicle-Detection/blob/master/vehicle_detection_project.ipynb). 
+The tuned parameters and corresponding visualization results are shown below:
+
+At scale = 1, i.e. sliding window size equals to 96*96, three rows of sliding windows were chosen in the range defined by (ystart,ystop) as (386, 466), (400,480), (416,480) respectively. 
+
+![alt text][image3]
+
+At scale = 1.5, i.e. sliding window size equals to 64*64, three rows of sliding windows were chosen in the range defined by (ystart,ystop) as (386, 486), (400,500), (416,516) respectively. 
+
+![alt text][image4]
+
+At scale = 2, i.e. sliding window size equals to 128*128, one row of sliding windows were chosen in the range defined by (ystart,ystop) as (416,550). 
+
+![alt text][image5]
+
+#### 3. Combine different search area and scales of sliding widows
+Combine all the seraching areas with corresponding scale of sliding windows as adjusted above, we define a function named `find_cars_diffScales`, which returns positive sliding windows from a given image. A visualization of the positive boxes on an example test image is as shown below: 
+
+![alt text][image6]
+
+
+
 
 
 
